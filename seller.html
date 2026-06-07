@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Penjual | RHN Preloved</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="nav-root"></div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="container">
+    <div class="page-hero-inner">
+      <div>
+        <p class="eyebrow">Dashboard Penjual</p>
+        <h1>Kelola Produk Anda</h1>
+        <p>Upload dan kelola semua listing barang preloved milik Anda.</p>
+      </div>
+      <div class="chip-row" id="role-chip"></div>
+    </div>
+  </div>
+</div>
+
+<main class="container page-body">
+
+  <!-- Stats Row -->
+  <div class="dash-stats" id="dashStats"></div>
+
+  <!-- My Listings Table -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
+      <div>
+        <h2 style="font-size:1.05rem;margin-bottom:.2rem">Listing Produk Saya</h2>
+        <p class="faint">Semua produk yang pernah Anda jual</p>
+      </div>
+      <button class="btn-primary" id="openAddModal">
+        + Upload Produk Baru
+      </button>
+    </div>
+    <div id="sellerListings"></div>
+  </div>
+
+</main>
+
+<!-- ══ UPLOAD MODAL ═══════════════════════════════════════ -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal" id="productModalBox">
+    <div class="modal-header">
+      <h2 id="modalTitle">Upload Produk Baru</h2>
+      <button class="modal-close" id="closeModal">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="fee-notice">
+        <strong>💰 Biaya Upload Produk: Rp 5.000</strong>
+        Upload produk dikenakan biaya Rp 5.000 sebagai biaya platform. Saat terjadi pembatalan upload barang oleh penjual, fee yang sudah dibayarkan akan dikembalikan sebesar <strong>50% (Rp 2.500)</strong>.
+      </div>
+
+      <form id="productForm">
+
+        <!-- Foto Produk -->
+        <div class="form-section">
+          <div class="form-section-title">📸 Foto Produk</div>
+          <div class="form-group">
+            <label class="form-label">Upload Gambar (maks. 4 foto)</label>
+            <input type="file" id="productImages" accept="image/*" multiple />
+            <span class="form-hint">Format JPG/PNG, tiap file maks. 5MB</span>
+          </div>
+          <div class="preview-grid" id="previewBox"></div>
+        </div>
+
+        <!-- Info Produk -->
+        <div class="form-section">
+          <div class="form-section-title">📦 Informasi Produk</div>
+          <div class="form-group">
+            <label class="form-label">Nama Produk *</label>
+            <input type="text" id="prod-name" placeholder="contoh: Jaket Denim Uniqlo" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Kategori *</label>
+              <select id="prod-category" required>
+                <option value="">Pilih kategori</option>
+                <option>Pakaian & Fashion</option>
+                <option>Buku & Alat Tulis</option>
+                <option>Elektronik</option>
+                <option>Furnitur & Dekorasi</option>
+                <option>Olahraga & Outdoor</option>
+                <option>Dapur & Peralatan</option>
+                <option>Lainnya</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kondisi *</label>
+              <select id="prod-condition" required>
+                <option value="">Pilih kondisi</option>
+                <option>Sangat Baik</option>
+                <option>Baik</option>
+                <option>Layak Pakai</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Deskripsi *</label>
+            <textarea id="prod-description" rows="3" placeholder="Ceritakan kondisi, detail, dan riwayat produk…" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Kelebihan</label>
+              <textarea id="prod-advantages" rows="2" placeholder="contoh: Bahan tebal, masih bagus"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kekurangan / Cacat</label>
+              <textarea id="prod-disadvantages" rows="2" placeholder="contoh: Ada lecet kecil di sudut"></textarea>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lokasi COD *</label>
+            <input type="text" id="prod-location" placeholder="contoh: Jl. Sonosewu km1, Bantul" required />
+          </div>
+        </div>
+
+        <!-- Harga & Pembayaran -->
+        <div class="form-section">
+          <div class="form-section-title">💰 Harga & Pembayaran</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Harga Jual (Rp) *</label>
+              <input type="number" id="prod-price" min="0" placeholder="contoh: 150000" required />
+            </div>
+            <div class="form-group" style="justify-content:flex-end">
+              <label class="checkbox-row" style="margin-top:1.6rem">
+                <input type="checkbox" id="prod-negotiable" />
+                Bisa negosiasi
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Metode Pembayaran * (pilih minimal 1)</label>
+            <div style="display:flex;flex-direction:column;gap:.25rem">
+              <label class="checkbox-row"><input type="checkbox" class="pay-method" value="COD" /> 💵 COD (Bayar di Tempat)</label>
+              <label class="checkbox-row"><input type="checkbox" class="pay-method" value="Bank Transfer" /> 🏦 Transfer Bank</label>
+              <label class="checkbox-row"><input type="checkbox" class="pay-method" value="E-Wallet" /> 📱 E-Wallet</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bukti Pembayaran Fee -->
+        <div class="form-section">
+          <div class="form-section-title">🧾 Bukti Pembayaran Fee</div>
+          <div class="form-group">
+            <label class="form-label">Upload Bukti Transfer Rp 5.000 *</label>
+            <div class="ktm-area" id="fee-area">
+              <input type="file" id="prod-fee-proof" accept="image/*" />
+              <div style="font-size:1.5rem;margin-bottom:.4rem">📄</div>
+              <p style="font-size:.82rem;color:var(--ink-faint)">Klik untuk upload bukti transfer</p>
+              <div id="fee-filename" style="font-size:.8rem;color:var(--accent);margin-top:.4rem;font-weight:600"></div>
+            </div>
+            <span class="form-hint">Transfer ke: BCA 1234567890 a.n. RHN Preloved</span>
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="cancelModal">Batal</button>
+      <button class="btn-primary" id="saveProduct">💾 Simpan Listing</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">© 2026 RHN Preloved</footer>
+
+<script src="app.js"></script>
+<script>
+  requireAuth();
+  renderNav();
+  renderSellerDashboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keranjang | RHN Preloved</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="nav-root"></div>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="page-hero-inner">
+      <div>
+        <p class="eyebrow">Keranjang & Checkout</p>
+        <h1>Konfirmasi Pesanan</h1>
+        <p>Periksa produk, pilih metode pembayaran, dan konfirmasi.</p>
+      </div>
+      <div class="chip-row" id="role-chip"></div>
+    </div>
+  </div>
+</div>
+
+<main class="container page-body">
+  <div class="cart-layout">
+    <div>
+      <div class="section-row">
+        <h2 style="font-size:1.05rem">Item di Keranjang</h2>
+        <a class="btn-ghost btn-sm" href="home.html">+ Tambah Produk</a>
+      </div>
+      <div id="cartItems"></div>
+    </div>
+
+    <aside class="order-summary">
+      <h2>Ringkasan</h2>
+      <div id="cartSummary"></div>
+      <div class="checkout-section">
+        <div class="form-group">
+          <label class="form-label">Metode Pembayaran</label>
+          <select id="checkoutPayment">
+            <option value="">— Pilih metode —</option>
+            <option value="COD">💵 COD (Bayar di Tempat)</option>
+            <option value="Bank Transfer">🏦 Transfer Bank</option>
+            <option value="E-Wallet">📱 E-Wallet (GoPay/OVO/Dana)</option>
+          </select>
+        </div>
+        <button id="buyNowBtn" class="btn-primary btn-full">✅ Konfirmasi Pesanan</button>
+        <div id="checkoutMessage"></div>
+        <a href="home.html" class="btn-ghost btn-full" style="text-align:center;font-size:.82rem">← Lanjut Belanja</a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="footer">© 2026 RHN Preloved</footer>
+
+<script src="app.js"></script>
+<script>
+  requireAuth();
+  renderNav();
+  renderCartPage();
+</script>
+</body>
+</html>

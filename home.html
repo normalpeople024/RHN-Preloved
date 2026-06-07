@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marketplace | RHN Preloved</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- NAV injected by JS -->
+<div id="nav-root"></div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="container">
+    <div class="page-hero-inner">
+      <div>
+        <p class="eyebrow">Marketplace</p>
+        <h1>Temukan Barang Bekas Berkualitas</h1>
+        <p>Barang preloved dari sesama mahasiswa rantau Yogyakarta.</p>
+      </div>
+      <div class="chip-row" id="role-chip"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="container page-body">
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">
+      <h3 style="font-size:.9rem;font-weight:600;color:var(--ink-mid)">🔍 Filter Produk</h3>
+    </div>
+    <div class="filter-grid">
+      <div class="form-group">
+        <label class="form-label">Cari</label>
+        <input type="search" id="searchInput" placeholder="Nama produk atau penjual…" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kategori</label>
+        <select id="categoryFilter"><option value="All">Semua Kategori</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rentang Harga</label>
+        <select id="priceFilter">
+          <option value="All">Semua Harga</option>
+          <option value="low">Di bawah Rp 100.000</option>
+          <option value="mid">Rp 100.000 – 500.000</option>
+          <option value="high">Di atas Rp 500.000</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kondisi</label>
+        <select id="conditionFilter">
+          <option value="All">Semua Kondisi</option>
+          <option value="Sangat Baik">Sangat Baik</option>
+          <option value="Baik">Baik</option>
+          <option value="Layak Pakai">Layak Pakai</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-footer">
+      <span class="results-count" id="resultsLabel">0 produk</span>
+      <button class="reset-btn" id="resetFilters">↺ Reset Filter</button>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <section style="margin-top:0">
+    <div class="section-row">
+      <h2 style="font-size:1.1rem">Semua Produk</h2>
+    </div>
+    <div id="productGrid" class="product-grid"></div>
+  </section>
+
+</main>
+
+<footer class="footer">© 2026 RHN Preloved · Platform mahasiswa rantau Yogyakarta</footer>
+
+<script src="app.js"></script>
+<script>
+  requireAuth();
+  renderNav();
+  renderMarketplace();
+</script>
+</body>
+</html>

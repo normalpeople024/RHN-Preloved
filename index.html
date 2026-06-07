@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RHN Preloved — Login</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .login-page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--bg);
+    }
+    .login-left {
+      background: linear-gradient(145deg, #111318 0%, #16191f 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(2rem,6vw,5rem);
+      border-right: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-left::before {
+      content: '';
+      position: absolute;
+      top: -100px; left: -100px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(249,115,22,.08) 0%, transparent 70%);
+    }
+    .login-left::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; right: -60px;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,.05) 0%, transparent 70%);
+    }
+    .login-left-inner { position: relative; z-index: 1; max-width: 420px; }
+    .brand-lockup { display: flex; align-items: center; gap: .65rem; margin-bottom: 3rem; }
+    .brand-dot {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--accent); display: grid; place-items: center;
+      font-size: 1rem;
+    }
+    .brand-name { font-size: 1.4rem; font-weight: 800; letter-spacing: -.03em; }
+    .brand-name span { color: var(--accent); }
+    .left-headline { font-size: clamp(2rem,3vw,2.6rem); font-weight: 800; line-height: 1.15; margin-bottom: 1rem; }
+    .left-headline em { color: var(--accent); font-style: normal; }
+    .left-sub { font-size: .9rem; color: var(--ink-mid); line-height: 1.7; margin-bottom: 2rem; max-width: 36ch; }
+    .feature-list { display: flex; flex-direction: column; gap: .65rem; }
+    .feature-item {
+      display: flex; align-items: center; gap: .75rem;
+      font-size: .85rem; color: var(--ink-mid);
+    }
+    .feature-icon {
+      width: 30px; height: 30px; border-radius: var(--r-sm);
+      background: var(--bg-input); border: 1px solid var(--border);
+      display: grid; place-items: center; font-size: .85rem; flex-shrink: 0;
+    }
+
+    .login-right {
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: clamp(1.5rem,4vw,3rem);
+    }
+    .login-form-wrap { width: 100%; max-width: 400px; }
+    .form-title { font-size: 1.5rem; margin-bottom: .4rem; }
+    .form-subtitle { font-size: .85rem; color: var(--ink-faint); margin-bottom: 1.75rem; }
+
+    .auth-tabs {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: var(--bg-input); border-radius: var(--r-md);
+      border: 1px solid var(--border); padding: .3rem; gap: .25rem;
+      margin-bottom: 1.75rem;
+    }
+    .auth-tab {
+      padding: .6rem; border-radius: var(--r-sm);
+      font-size: .85rem; font-weight: 600; color: var(--ink-faint);
+      background: none; border: none; cursor: pointer; transition: all var(--t);
+      font-family: 'Sora', sans-serif;
+    }
+    .auth-tab.active {
+      background: var(--bg-card); color: var(--ink);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .auth-form { display: flex; flex-direction: column; gap: .85rem; }
+    .auth-form.hidden { display: none; }
+
+    .ktm-area {
+      border: 2px dashed var(--border-hi); border-radius: var(--r-md);
+      padding: 1.5rem 1rem; text-align: center;
+      cursor: pointer; transition: all var(--t); background: var(--bg-input);
+      position: relative; overflow: hidden;
+    }
+    .ktm-area:hover { border-color: var(--accent); background: var(--accent-lo); }
+    .ktm-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+    .ktm-icon { font-size: 1.75rem; margin-bottom: .5rem; }
+    .ktm-area p { font-size: .8rem; color: var(--ink-faint); }
+    .ktm-area .ktm-name { font-size: .82rem; color: var(--accent); margin-top: .4rem; font-weight: 600; }
+
+    #auth-message { margin-top: .25rem; }
+
+    @media (max-width: 768px) {
+      .login-page { grid-template-columns: 1fr; }
+      .login-left { display: none; }
+      .login-right { min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-page">
+  <!-- Left branding panel -->
+  <div class="login-left">
+    <div class="login-left-inner">
+      <div class="brand-lockup">
+        <div class="brand-dot">♻</div>
+        <div class="brand-name"><span>RHN</span> Preloved</div>
+      </div>
+
+      <h1 class="left-headline">
+        Jual & beli barang bekas<br><em>mahasiswa Jogja</em>
+      </h1>
+      <p class="left-sub">
+        Platform khusus mahasiswa rantau di Yogyakarta. Habis lulus? Jangan bawa semua barangmu pulang — jual di sini!
+      </p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">🏠</div>
+          <span>Khusus mahasiswa rantau Yogyakarta</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🤝</div>
+          <span>Transaksi langsung, deal via WhatsApp</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🛡</div>
+          <span>Terverifikasi dengan Kartu Tanda Mahasiswa</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⭐</div>
+          <span>Sistem ulasan & rating penjual</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="login-right">
+    <div class="login-form-wrap">
+      <h2 class="form-title">Selamat Datang 👋</h2>
+      <p class="form-subtitle">Masuk atau daftar untuk mulai berjualan & berbelanja</p>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login">Masuk</button>
+        <button class="auth-tab" id="tab-register">Daftar</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form class="auth-form" id="login-form">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="login-email" placeholder="nama@email.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn-primary btn-full btn-lg" style="margin-top:.25rem">
+          Masuk →
+        </button>
+        <p style="text-align:center;font-size:.8rem;color:var(--ink-faint)">
+          Belum punya akun? <button type="button" id="go-register" style="background:none;border:none;color:var(--accent);font-weight:600;cursor:pointer;font-family:inherit;font-size:.8rem">Daftar sekarang</button>
+        </p>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form class="auth-form hidden" id="register-form">
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap</label>
+          <input type="text" id="reg-name" placeholder="Nama sesuai KTM" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="reg-username" placeholder="@username" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="reg-email" placeholder="nama@email.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nomor WhatsApp</label>
+          <input type="tel" id="reg-phone" placeholder="08xxxxxxxxxx" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="reg-password" placeholder="Min. 6 karakter" required />
+        </div>
+
+        <!-- KTM Upload -->
+        <div class="form-group">
+          <label class="form-label">Upload KTM (Kartu Tanda Mahasiswa) *</label>
+          <div class="ktm-area" id="ktm-area">
+            <input type="file" id="reg-ktm" accept="image/*" required />
+            <div class="ktm-icon">🪪</div>
+            <p>Klik untuk upload foto KTM kamu</p>
+            <p>JPG / PNG, maks. 5MB</p>
+            <div class="ktm-name" id="ktm-name"></div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-full btn-lg" style="margin-top:.25rem">
+          Buat Akun →
+        </button>
+        <p style="text-align:center;font-size:.8rem;color:var(--ink-faint)">
+          Sudah punya akun? <button type="button" id="go-login" style="background:none;border:none;color:var(--accent);font-weight:600;cursor:pointer;font-family:inherit;font-size:.8rem">Masuk</button>
+        </p>
+      </form>
+
+      <div id="auth-message"></div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  // Check if already logged in
+  const u = localStorage.getItem('rhn_current_user');
+  if (u) window.location.href = 'home.html';
+
+  // Tab switching
+  const tabLogin    = document.getElementById('tab-login');
+  const tabRegister = document.getElementById('tab-register');
+  const loginForm   = document.getElementById('login-form');
+  const regForm     = document.getElementById('register-form');
+
+  function showLogin() {
+    tabLogin.classList.add('active'); tabRegister.classList.remove('active');
+    loginForm.classList.remove('hidden'); regForm.classList.add('hidden');
+  }
+  function showRegister() {
+    tabRegister.classList.add('active'); tabLogin.classList.remove('active');
+    regForm.classList.remove('hidden'); loginForm.classList.add('hidden');
+  }
+
+  tabLogin.addEventListener('click', showLogin);
+  tabRegister.addEventListener('click', showRegister);
+  document.getElementById('go-register').addEventListener('click', showRegister);
+  document.getElementById('go-login').addEventListener('click', showLogin);
+
+  // KTM file name display
+  document.getElementById('reg-ktm').addEventListener('change', function() {
+    const n = document.getElementById('ktm-name');
+    n.textContent = this.files[0]?.name || '';
+  });
+</script>
+</body>
+</html>
