@@ -839,21 +839,37 @@ function renderSellerDashboard() {
   function renderStats() {
     if (!statsEl) return;
     const myProducts = getProducts().filter((p) => p.sellerId === user.id);
+    const myProductIds = myProducts.map((p) => p.id);
+    const allOrders = getOrders();
     const sold = myProducts.filter((p) => p.sold).length;
     const active = myProducts.filter((p) => !p.sold && p.active).length;
-    const total = myProducts.reduce((s, p) => (p.sold ? s + p.price : s), 0);
+    const totalEarned = myProducts.reduce(
+      (s, p) => (p.sold ? s + p.price : s),
+      0,
+    );
+    const pendingCount = allOrders.filter(
+      (o) =>
+        o.status === "pending" &&
+        o.items.some((i) => myProductIds.includes(i.id)),
+    ).length;
 
     statsEl.innerHTML = [
       { value: myProducts.length, label: "Total Listing", icon: "📦" },
       { value: active, label: "Aktif", icon: "🟢" },
       { value: sold, label: "Terjual", icon: "✅" },
-      { value: formatRp(total), label: "Estimasi Pendapatan", icon: "💰" },
+      {
+        value: pendingCount,
+        label: "Pesanan Masuk",
+        icon: "🔔",
+        highlight: pendingCount > 0,
+      },
+      { value: formatRp(totalEarned), label: "Est. Pendapatan", icon: "💰" },
     ]
       .map(
         (s) => `
-      <div class="stat-card">
-        <div style="font-size:1.5rem;margin-bottom:.35rem">${s.icon}</div>
-        <div class="stat-value">${s.value}</div>
+      <div class="stat-card" ${s.highlight ? 'style="border-color:var(--yellow);background:var(--yellow-lo)"' : ""}>
+        <div style="font-size:1.4rem;margin-bottom:.35rem">${s.icon}</div>
+        <div class="stat-value" ${s.highlight ? 'style="color:var(--yellow)"' : ""}>${s.value}</div>
         <div class="stat-label">${s.label}</div>
       </div>`,
       )
@@ -862,6 +878,7 @@ function renderSellerDashboard() {
 
   function renderListings() {
     const myProducts = getProducts().filter((p) => p.sellerId === user.id);
+    const allOrders = getOrders();
 
     if (!myProducts.length) {
       listingsEl.innerHTML = `
@@ -873,56 +890,125 @@ function renderSellerDashboard() {
       return;
     }
 
-    listingsEl.innerHTML = `
-      <div style="overflow-x:auto">
-        <table class="product-table">
-          <thead>
-            <tr>
-              <th>Produk</th>
-              <th>Harga</th>
-              <th>Kondisi</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${myProducts
-              .map(
-                (p) => `
-              <tr>
-                <td>
-                  <div style="display:flex;align-items:center;gap:.75rem">
-                    <img class="table-thumb"
-                      src="${p.images?.[0] || "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=100"}"
-                      alt="${p.name}" />
+    listingsEl.innerHTML = myProducts
+      .map((p) => {
+        // Find all pending orders that contain this product
+        const incomingOrders = allOrders.filter(
+          (o) =>
+            o.status === "pending" && o.items.some((item) => item.id === p.id),
+        );
+        const acceptedOrders = allOrders.filter(
+          (o) =>
+            o.status === "accepted" && o.items.some((item) => item.id === p.id),
+        );
+
+        const pendingBadge = incomingOrders.length
+          ? `<span class="badge" style="background:var(--yellow-lo);color:var(--yellow);border:1px solid rgba(234,179,8,.25);animation:pulse 1.5s infinite">🔔 ${incomingOrders.length} pesanan masuk</span>`
+          : "";
+
+        const ordersHtml = incomingOrders.length
+          ? `
+        <div class="incoming-orders">
+          <div class="incoming-title">📬 Pesanan Masuk</div>
+          ${incomingOrders
+            .map((o) => {
+              const buyer = getUsers().find((u) => u.id === o.buyerId) || {};
+              const waLink = `https://wa.me/${waNumber(buyer.phone || "")}?text=${encodeURIComponent("Halo " + (buyer.name || "") + ', pesananmu untuk produk "' + p.name + '" sudah saya terima! Kapan bisa COD?')}`;
+              return `
+              <div class="order-row-seller">
+                <div class="order-row-info">
+                  <div class="order-row-buyer">
+                    <span class="buyer-avatar">${(buyer.name || "?").charAt(0).toUpperCase()}</span>
                     <div>
-                      <div style="font-weight:600;font-size:.88rem">${p.name}</div>
-                      <div style="font-size:.75rem;color:var(--ink-faint)">${p.category}</div>
+                      <div style="font-weight:600;font-size:.85rem">${buyer.name || "Pembeli"}</div>
+                      <div style="font-size:.75rem;color:var(--ink-faint)">@${buyer.username || "-"} · ${new Date(o.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}</div>
                     </div>
                   </div>
-                </td>
-                <td><span class="price-text" style="font-size:.92rem">${formatRp(p.price)}</span></td>
-                <td><span class="badge badge-cond">${p.condition}</span></td>
-                <td>
-                  ${
-                    p.sold
-                      ? `<span class="badge" style="background:var(--red-lo);color:var(--red)">Terjual</span>`
-                      : `<span class="badge" style="background:var(--green-lo);color:var(--green)">Aktif</span>`
-                  }
-                </td>
-                <td>
-                  <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-                    <button class="btn-ghost btn-sm" onclick="editListing('${p.id}')">Edit</button>
-                    ${!p.sold ? `<button class="btn-outline btn-sm" onclick="markSold('${p.id}')">Tandai Terjual</button>` : ""}
-                    <button class="btn-danger btn-sm" onclick="deleteListing('${p.id}')">Hapus</button>
+                  <div style="font-size:.8rem;color:var(--ink-mid)">
+                    💳 ${o.payment} · <span class="price-text" style="font-size:.8rem">${formatRp(o.total)}</span>
                   </div>
-                </td>
-              </tr>`,
-              )
-              .join("")}
-          </tbody>
-        </table>
-      </div>`;
+                </div>
+                <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+                  <a href="${waLink}" target="_blank" class="btn-outline btn-sm">
+                    💬 WA Pembeli
+                  </a>
+                  <button class="btn-primary btn-sm" onclick="acceptOrder('${o.id}','${p.id}')">
+                    ✅ Terima Pesanan
+                  </button>
+                  <button class="btn-danger btn-sm" onclick="rejectOrder('${o.id}')">
+                    ✕ Tolak
+                  </button>
+                </div>
+              </div>`;
+            })
+            .join("")}
+        </div>`
+          : "";
+
+        const acceptedHtml = acceptedOrders.length
+          ? `
+        <div class="incoming-orders" style="border-color:rgba(34,197,94,.2);background:var(--green-lo)">
+          <div class="incoming-title" style="color:var(--green)">✅ Pesanan Diterima — Tunggu Konfirmasi Pembeli</div>
+          ${acceptedOrders
+            .map((o) => {
+              const buyer = getUsers().find((u) => u.id === o.buyerId) || {};
+              const waLink = `https://wa.me/${waNumber(buyer.phone || "")}?text=${encodeURIComponent("Halo " + (buyer.name || "") + ', pesananmu sudah saya terima! Kapan bisa COD untuk produk "' + p.name + '"?')}`;
+              return `
+              <div class="order-row-seller" style="border-color:rgba(34,197,94,.15)">
+                <div class="order-row-info">
+                  <div class="order-row-buyer">
+                    <span class="buyer-avatar" style="background:var(--green)">${(buyer.name || "?").charAt(0).toUpperCase()}</span>
+                    <div>
+                      <div style="font-weight:600;font-size:.85rem">${buyer.name || "Pembeli"}</div>
+                      <div style="font-size:.75rem;color:var(--ink-faint)">📱 ${buyer.phone || "-"}</div>
+                    </div>
+                  </div>
+                </div>
+                <a href="${waLink}" target="_blank" class="btn-outline btn-sm" style="border-color:var(--green);color:var(--green)">
+                  💬 Chat Pembeli
+                </a>
+              </div>`;
+            })
+            .join("")}
+        </div>`
+          : "";
+
+        return `
+        <div class="listing-item" id="listing-${p.id}">
+          <div class="listing-main">
+            <img class="listing-thumb"
+              src="${p.images?.[0] || "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=100"}"
+              alt="${p.name}" />
+            <div class="listing-info">
+              <div style="display:flex;align-items:flex-start;gap:.5rem;flex-wrap:wrap">
+                <div style="font-weight:700;font-size:.95rem;flex:1">${p.name}</div>
+                ${pendingBadge}
+              </div>
+              <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-top:.35rem">
+                <span class="price-text" style="font-size:.95rem">${formatRp(p.price)}</span>
+                <span class="badge badge-cond" style="font-size:.65rem">${p.condition}</span>
+                <span class="faint" style="font-size:.75rem">${p.category}</span>
+              </div>
+              <div style="font-size:.75rem;color:var(--ink-faint);margin-top:.2rem">📍 ${p.location || "Yogyakarta"}</div>
+            </div>
+            <div class="listing-status-col">
+              ${
+                p.sold
+                  ? `<span class="badge" style="background:var(--red-lo);color:var(--red)">Terjual</span>`
+                  : `<span class="badge" style="background:var(--green-lo);color:var(--green)">Aktif</span>`
+              }
+              <div style="display:flex;gap:.35rem;margin-top:.5rem;flex-wrap:wrap">
+                <button class="btn-ghost btn-sm" onclick="editListing('${p.id}')">Edit</button>
+                ${!p.sold ? `<button class="btn-outline btn-sm" onclick="markSold('${p.id}')">Terjual</button>` : ""}
+                <button class="btn-danger btn-sm" onclick="deleteListing('${p.id}')">Hapus</button>
+              </div>
+            </div>
+          </div>
+          ${ordersHtml}
+          ${acceptedHtml}
+        </div>`;
+      })
+      .join("");
   }
 
   renderStats();
@@ -1011,6 +1097,29 @@ function deleteListing(id) {
 }
 window.deleteListing = deleteListing;
 
+function acceptOrder(orderId, productId) {
+  const orders = getOrders();
+  const idx = orders.findIndex((o) => o.id === orderId);
+  if (idx < 0) return;
+  orders[idx].status = "accepted";
+  store(K.orders, orders);
+  toast("✅ Pesanan diterima! Segera hubungi pembeli untuk COD.", "success");
+  renderSellerDashboard();
+}
+window.acceptOrder = acceptOrder;
+
+function rejectOrder(orderId) {
+  if (!confirm("Tolak pesanan ini? Pembeli akan mendapat notifikasi.")) return;
+  const orders = getOrders();
+  const idx = orders.findIndex((o) => o.id === orderId);
+  if (idx < 0) return;
+  orders[idx].status = "rejected";
+  store(K.orders, orders);
+  toast("Pesanan ditolak.", "info");
+  renderSellerDashboard();
+}
+window.rejectOrder = rejectOrder;
+
 /* ── PROFILE PAGE ─────────────────────────────────────── */
 function renderProfilePage() {
   const user = getUser();
@@ -1033,16 +1142,21 @@ function renderProfilePage() {
   const statsEl = document.getElementById("profile-stats");
   if (statsEl) {
     const myProds = getProducts().filter((p) => p.sellerId === user.id);
+    const myProductIds = myProds.map((p) => p.id);
     const myOrders = getOrders().filter((o) => o.buyerId === user.id);
-    const myReviews = getReviews().filter((r) => r.buyerId === user.id);
+    const givenReviews = getReviews().filter((r) => r.buyerId === user.id);
+    const rcvdReviews = getReviews().filter((r) =>
+      myProductIds.includes(r.productId),
+    );
     statsEl.innerHTML = [
       ["📦", myProds.length, "Produk Dijual"],
       ["🛒", myOrders.length, "Pesanan"],
-      ["⭐", myReviews.length, "Ulasan Diberikan"],
+      ["✍️", givenReviews.length, "Ulasan Diberikan"],
+      ["⭐", rcvdReviews.length, "Ulasan Diterima"],
     ]
       .map(
         ([icon, val, label]) => `
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;padding:.35rem 0;border-bottom:1px solid var(--border)">
         <span style="color:var(--ink-mid)">${icon} ${label}</span>
         <span style="font-weight:700">${val}</span>
       </div>`,
@@ -1058,25 +1172,32 @@ function renderProfilePage() {
 
   // Tabs
   const tabOrders = document.getElementById("tab-orders");
-  const tabReviews = document.getElementById("tab-reviews");
+  const tabGiven = document.getElementById("tab-reviews-given");
+  const tabReceived = document.getElementById("tab-reviews-received");
   const panOrders = document.getElementById("orders-panel");
-  const panReviews = document.getElementById("reviews-panel");
+  const panGiven = document.getElementById("reviews-given-panel");
+  const panReceived = document.getElementById("reviews-received-panel");
 
-  tabOrders?.addEventListener("click", () => {
-    tabOrders.classList.add("active");
-    tabReviews.classList.remove("active");
-    panOrders.classList.remove("hidden");
-    panReviews.classList.add("hidden");
-  });
-  tabReviews?.addEventListener("click", () => {
-    tabReviews.classList.add("active");
-    tabOrders.classList.remove("active");
-    panReviews.classList.remove("hidden");
-    panOrders.classList.add("hidden");
-  });
+  function switchTab(activeTab, activePanel) {
+    [tabOrders, tabGiven, tabReceived].forEach((t) =>
+      t?.classList.remove("active"),
+    );
+    [panOrders, panGiven, panReceived].forEach((p) =>
+      p?.classList.add("hidden"),
+    );
+    activeTab?.classList.add("active");
+    activePanel?.classList.remove("hidden");
+  }
+
+  tabOrders?.addEventListener("click", () => switchTab(tabOrders, panOrders));
+  tabGiven?.addEventListener("click", () => switchTab(tabGiven, panGiven));
+  tabReceived?.addEventListener("click", () =>
+    switchTab(tabReceived, panReceived),
+  );
 
   renderOrders();
-  renderMyReviews();
+  renderGivenReviews();
+  renderReceivedReviews();
 }
 
 function renderOrders() {
@@ -1105,7 +1226,19 @@ function renderOrders() {
           <div class="order-id">#${order.id}</div>
           <div style="font-size:.78rem;color:var(--ink-faint);margin-top:.2rem">${new Date(order.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</div>
         </div>
-        <span class="order-status ${order.status}">${order.status === "pending" ? "Menunggu" : order.status === "done" ? "Selesai" : "Dibatalkan"}</span>
+        <span class="order-status ${order.status}">
+          ${
+            order.status === "pending"
+              ? "⏳ Menunggu Penjual"
+              : order.status === "accepted"
+                ? "✅ Diterima Penjual"
+                : order.status === "done"
+                  ? "🎉 Selesai"
+                  : order.status === "rejected"
+                    ? "✕ Ditolak"
+                    : order.status
+          }
+        </span>
       </div>
       <div class="order-items">${order.items.map((i) => i.name).join(", ")}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
@@ -1113,9 +1246,10 @@ function renderOrders() {
         <span class="faint">${order.payment}</span>
       </div>
       ${
-        order.status === "pending"
+        order.status === "pending" || order.status === "accepted"
           ? `
-        <div style="display:flex;gap:.5rem;margin-top:.85rem;flex-wrap:wrap">
+        <div style="display:flex;gap:.5rem;margin-top:.85rem;flex-wrap:wrap;align-items:center">
+          ${order.status === "pending" ? `<span class="badge" style="background:var(--yellow-lo);color:var(--yellow)">⏳ Menunggu penjual menerima pesanan</span>` : ""}
           ${order.items
             .map(
               (item) => `
@@ -1124,7 +1258,22 @@ function renderOrders() {
           `,
             )
             .join("")}
-          <button class="btn-primary btn-sm" onclick="confirmDone('${order.id}')">✅ Konfirmasi Selesai</button>
+          ${
+            order.status === "accepted"
+              ? `
+            <button class="btn-primary btn-sm" onclick="confirmDone('${order.id}')">✅ Konfirmasi Transaksi Selesai</button>
+          `
+              : ""
+          }
+        </div>
+      `
+          : ""
+      }
+      ${
+        order.status === "rejected"
+          ? `
+        <div style="margin-top:.65rem;padding:.65rem .85rem;background:var(--red-lo);border-radius:var(--r-md);font-size:.82rem;color:var(--red)">
+          Pesanan ini ditolak oleh penjual. Silakan hubungi penjual atau cari produk lain.
         </div>
       `
           : ""
@@ -1231,14 +1380,14 @@ function submitReview(orderId) {
 }
 window.submitReview = submitReview;
 
-function renderMyReviews() {
-  const el = document.getElementById("reviewsList");
+function renderGivenReviews() {
+  const el = document.getElementById("reviews-given-list");
   if (!el) return;
   const user = getUser();
   const rs = getReviews().filter((r) => r.buyerId === user.id);
 
   if (!rs.length) {
-    el.innerHTML = `<div class="empty-state" style="padding:2rem"><div class="empty-icon">⭐</div><h3>Belum ada ulasan</h3><p>Ulasan muncul setelah transaksi selesai.</p></div>`;
+    el.innerHTML = `<div class="empty-state" style="padding:2rem"><div class="empty-icon">✍️</div><h3>Belum ada ulasan</h3><p>Ulasan muncul setelah transaksi selesai dan dikonfirmasi.</p></div>`;
     return;
   }
 
@@ -1247,14 +1396,79 @@ function renderMyReviews() {
       const prod = getProducts().find((p) => p.id === r.productId);
       return `
       <div class="review-card">
-        <div class="review-header">
+        <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.5rem">
+          ${prod?.images?.[0] ? `<img src="${prod.images[0]}" style="width:40px;height:40px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border)" />` : ""}
           <div>
-            <span style="font-weight:600;font-size:.88rem">${prod?.name || "Produk"}</span>
-            <div class="review-stars">${"⭐".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
+            <a href="product.html?id=${r.productId}" style="font-weight:600;font-size:.88rem;color:var(--accent)">${prod?.name || "Produk"}</a>
+            <div style="font-size:.75rem;color:var(--ink-faint)">Penjual: ${prod?.sellerName || "-"}</div>
           </div>
-          <span class="review-author">${new Date(r.createdAt).toLocaleDateString("id-ID")}</span>
         </div>
-        <p class="review-text">${r.text}</p>
+        <div class="review-header">
+          <div class="review-stars">${"⭐".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
+          <span class="review-author">${new Date(r.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</span>
+        </div>
+        <p class="review-text" style="margin-top:.4rem">${r.text}</p>
+      </div>`;
+    })
+    .join("");
+}
+
+function renderReceivedReviews() {
+  const el = document.getElementById("reviews-received-list");
+  if (!el) return;
+  const user = getUser();
+
+  // Reviews on products that belong to me
+  const myProductIds = getProducts()
+    .filter((p) => p.sellerId === user.id)
+    .map((p) => p.id);
+  const rs = getReviews().filter((r) => myProductIds.includes(r.productId));
+
+  if (!rs.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:2rem"><div class="empty-icon">⭐</div><h3>Belum ada ulasan</h3><p>Ulasan dari pembeli akan muncul di sini setelah transaksi selesai.</p></div>`;
+    return;
+  }
+
+  // Group by product
+  const byProduct = {};
+  rs.forEach((r) => {
+    if (!byProduct[r.productId]) byProduct[r.productId] = [];
+    byProduct[r.productId].push(r);
+  });
+
+  el.innerHTML = Object.entries(byProduct)
+    .map(([prodId, reviews]) => {
+      const prod = getProducts().find((p) => p.id === prodId);
+      const avg = (
+        reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+      ).toFixed(1);
+      return `
+      <div style="margin-bottom:1.25rem">
+        <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.65rem;padding-bottom:.65rem;border-bottom:1px solid var(--border)">
+          ${prod?.images?.[0] ? `<img src="${prod.images[0]}" style="width:44px;height:44px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border)" />` : ""}
+          <div>
+            <div style="font-weight:700;font-size:.9rem">${prod?.name || "Produk"}</div>
+            <div style="font-size:.75rem;color:var(--yellow)">⭐ ${avg} · ${reviews.length} ulasan</div>
+          </div>
+        </div>
+        ${reviews
+          .map(
+            (r) => `
+          <div class="review-card" style="margin-bottom:.5rem">
+            <div class="review-header">
+              <div style="display:flex;align-items:center;gap:.5rem">
+                <span style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:.7rem;font-weight:700;display:grid;place-items:center;flex-shrink:0">${r.buyerName.charAt(0).toUpperCase()}</span>
+                <div>
+                  <span style="font-weight:600;font-size:.85rem">${r.buyerName}</span>
+                  <div class="review-stars" style="font-size:.8rem">${"⭐".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
+                </div>
+              </div>
+              <span class="review-author">${new Date(r.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</span>
+            </div>
+            <p class="review-text" style="margin-top:.4rem">${r.text}</p>
+          </div>`,
+          )
+          .join("")}
       </div>`;
     })
     .join("");

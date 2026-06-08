@@ -668,9 +668,11 @@ input[type="file"]:hover { border-color: var(--accent); background: var(--accent
   padding: .25rem .7rem; border-radius: var(--r-full);
   font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
 }
-.order-status.pending  { background: var(--yellow-lo); color: var(--yellow); }
-.order-status.done     { background: var(--green-lo);  color: var(--green); }
-.order-status.cancelled{ background: var(--red-lo);    color: var(--red); }
+.order-status.pending   { background: var(--yellow-lo); color: var(--yellow); }
+.order-status.accepted  { background: var(--blue-lo);   color: var(--blue); }
+.order-status.done      { background: var(--green-lo);  color: var(--green); }
+.order-status.rejected  { background: var(--red-lo);    color: var(--red); }
+.order-status.cancelled { background: var(--red-lo);    color: var(--red); }
 .order-items { font-size: .85rem; color: var(--ink-mid); margin-bottom: .65rem; }
 .order-total { font-family: 'Lora', serif; font-weight: 600; color: var(--accent); font-size: 1rem; }
 
@@ -698,6 +700,64 @@ input[type="file"]:hover { border-color: var(--accent); background: var(--accent
 .review-stars { color: var(--yellow); font-size: .85rem; }
 .review-author { font-size: .78rem; color: var(--ink-faint); }
 .review-text { font-size: .88rem; color: var(--ink-mid); }
+
+/* ═══════════════════════════════════
+   SELLER LISTINGS (new card style)
+═══════════════════════════════════ */
+.listing-item {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: border-color var(--t);
+}
+.listing-item:hover { border-color: var(--border-hi); }
+
+.listing-main {
+  display: grid;
+  grid-template-columns: 68px 1fr auto;
+  gap: 1rem;
+  align-items: start;
+  padding: 1.1rem 1.25rem;
+  background: var(--bg-card);
+}
+.listing-thumb {
+  width: 68px; height: 68px; object-fit: cover;
+  border-radius: var(--r-md); border: 1px solid var(--border);
+}
+.listing-info { min-width: 0; }
+.listing-status-col { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+
+.incoming-orders {
+  border-top: 1px solid var(--border);
+  background: rgba(234,179,8,.04);
+  padding: 1rem 1.25rem;
+  display: flex; flex-direction: column; gap: .65rem;
+}
+.incoming-title {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--yellow); margin-bottom: .15rem;
+}
+
+.order-row-seller {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: .85rem 1rem;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .75rem; flex-wrap: wrap;
+}
+.order-row-info { display: flex; flex-direction: column; gap: .35rem; flex: 1; }
+.order-row-buyer { display: flex; align-items: center; gap: .6rem; }
+.buyer-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: .78rem; font-weight: 800;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .65; }
+}
 
 /* ═══════════════════════════════════
    FOOTER
